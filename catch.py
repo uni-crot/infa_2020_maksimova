@@ -7,7 +7,7 @@ import math
 pygame.init()
 
 # экран и основные переменные
-FPS = 20
+FPS = 40
 width = 1100
 height = 700
 screen = pygame.display.set_mode((width, height))
@@ -69,7 +69,7 @@ def update_rects(): #для передвижения прямоугольник�
     for i in range(n):
         rects[i][0] += rects_speeds[i][0]+math.cos(math.pi/(i+1))
         rects[i][1] += rects_speeds[i][1]+math.sin(math.pi/(i+1))
-        if rects[i][0] <= 0:
+        if rects[i][0] <= rects[i][2]:
             rects_speeds[i][0] = random.randint(0, 5)
         if rects[i][1] <= 0:
             rects_speeds[i][1] = random.randint(0, 5)
@@ -86,27 +86,40 @@ def update_score(event, score):
         x = balls[i][0]
         y = balls[i][1]
         r = balls[i][2]
-        #x1 = rects[i][0]
-        #y1 = rects[i][1]
-        #w1 = rects[i][2]
-        #h1 = rects[i][3]
         if ((x-eventX)**2+(y-eventY)**2)<=r**2 :
             score=score+1
             balls[i] = [random.randint(100, 1100),random.randint(100, 900),random.randint(10, 100)]
             balls_speeds[i] = [random.randint(-4, 5), random.randint(-4, 5)]
             balls_colors [i]= COLORS[random.randint(0, 5)]
-
     return score
+
+def update_points(event, points):
+    eventX = event.pos[0]
+    eventY = event.pos[1]
+    for i in range(n):
+        x1 = rects[i][0]
+        y1 = rects[i][1]
+        w1 = rects[i][2]
+        h1 = rects[i][3]
+        if (((eventX<=(x1+w1)) and (eventX>=x1)) and ((eventY<=(y1+h1)) and (eventY>= y1)))== True:
+            points=points+1
+            rects[i] = [random.randint(100, width),random.randint(100, height-30),random.randint(50, 200),random.randint(50,200)]
+            rects_speeds[i] = [random.randint(-4, 5), random.randint(-4, 5)]
+            rects_colors [i]= COLORS[random.randint(0, 5)]
+    return points
 
 # выводим счет на экран
 def print_score(score):
     scoreText = myfont.render(str(score), False, WHITE)
     screen.blit(scoreText, (0, 0))
-
+def print_points(points):
+    pointsText = myfont.render(str(points), False, WHITE)
+    screen.blit(pointsText, (0, 20))
 # отрисовываем все элементы
-def draw(score):
+def draw(score,points):
     screen.fill(BLACK)
     print_score(score)
+    print_points(points)
     for i in range(n):
         circle(screen, balls_colors[i], (balls[i][0], balls[i][1]), balls[i][2])
         rect(screen,rects_colors[i], (rects[i][0], rects[i][1],rects[i][2],rects[i][3]))
@@ -132,8 +145,9 @@ while not finished:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             score = update_score(event, score)
+            points = update_points(event, points)
     update_balls()
     update_rects()
-    draw(score)
+    draw(score,points)
 
 pygame.quit()
